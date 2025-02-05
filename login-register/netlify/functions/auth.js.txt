@@ -1,0 +1,48 @@
+// netlify/functions/auth.js
+
+let users = [
+  { email: 'test@example.com', password: '123456', name: 'محمد' },
+  { email: 'user@example.com', password: 'password', name: 'أحمد' }
+];
+
+exports.handler = async function(event, context) {
+  const { email, password, action } = JSON.parse(event.body);
+
+  if (action === 'register') {
+    // منطق التسجيل
+    const existingUser = users.find(u => u.email === email);
+    if (existingUser) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, message: 'البريد الإلكتروني موجود مسبقًا' })
+      };
+    }
+
+    // إضافة مستخدم جديد
+    const newUser = { email, password, name: email.split('@')[0] };
+    users.push(newUser);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, message: 'تم التسجيل بنجاح!' })
+    };
+  } else if (action === 'login') {
+    // منطق تسجيل الدخول
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ success: true, name: user.name })
+      };
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, message: 'بيانات الدخول غير صحيحة' })
+      };
+    }
+  }
+
+  return {
+    statusCode: 400,
+    body: JSON.stringify({ success: false, message: 'عملية غير معروفة' })
+  };
+};

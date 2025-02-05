@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التسجيل وتسجيل الدخول</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            color: green;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 id="formTitle">تسجيل حساب جديد</h2>
+        <form id="form">
+            <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+            <input type="password" id="password" placeholder="كلمة المرور" required>
+            <button type="submit">تسجيل</button>
+        </form>
+        <p id="message" class="message"></p>
+        <p id="toggleFormText">إذا كنت تمتلك حسابًا، <a href="#" onclick="toggleForm()">تسجيل الدخول</a></p>
+    </div>
+
+    <script>
+        let isRegistering = true; // Flag to toggle between register and login
+
+        function toggleForm() {
+            isRegistering = !isRegistering;
+            document.getElementById("formTitle").textContent = isRegistering ? "تسجيل حساب جديد" : "تسجيل الدخول";
+            document.getElementById("toggleFormText").innerHTML = isRegistering
+                ? 'إذا كنت تمتلك حسابًا، <a href="#" onclick="toggleForm()">تسجيل الدخول</a>'
+                : 'ليس لديك حساب؟ <a href="#" onclick="toggleForm()">إنشاء حساب جديد</a>';
+            document.getElementById("form").reset();
+            document.getElementById("message").textContent = '';
+        }
+
+        document.getElementById("form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch("/.netlify/functions/auth", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    action: isRegistering ? 'register' : 'login'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById("message").textContent = isRegistering ? "تم التسجيل بنجاح!" : "مرحبًا " + data.name;
+            } else {
+                document.getElementById("message").textContent = data.message;
+            }
+        });
+    </script>
+
+</body>
+</html>
